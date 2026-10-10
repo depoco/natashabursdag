@@ -103,8 +103,6 @@
     document.getElementById("m").textContent = Math.floor(diff / 6e4) % 60;
     document.getElementById("s").textContent = Math.floor(diff / 1e3) % 60;
   }
-  tick();
-  setInterval(tick, 1000);
 
   // Tiny confetti, no dependencies
   var cv = document.getElementById("confetti"),
@@ -143,6 +141,9 @@
     requestAnimationFrame(frame);
   }
   document.getElementById("celebrate").addEventListener("click", function() { burst(120); });
+
+  tick();
+  setInterval(tick, 1000);
 </script>
 </body>
 </html>

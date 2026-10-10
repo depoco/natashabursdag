@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noe er på vei… ⏳</title>
+<meta name="description" content="Noe er på vei. Kom tilbake 11. oktober.">
+<meta name="theme-color" content="#fff5f8">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #fff5f8;
+    color: #333;
+    line-height: 1.5;
+  }
+  main { max-width: 560px; margin: 0 auto; padding: 16px 16px 48px; }
+  .badge {
+    display: inline-block;
+    background: #d6336c; color: #fff;
+    font-size: 14px; font-weight: 700;
+    padding: 6px 14px; border-radius: 999px;
+    margin: 20px 0 8px;
+  }
+  h1 { font-size: clamp(28px, 8vw, 40px); margin: 4px 0 16px; line-height: 1.15; }
+  figure { margin: 0; }
+  picture img {
+    width: 100%; height: auto; display: block;
+    border-radius: 16px;
+  }
+  figcaption { font-size: 13px; color: #999; text-align: center; margin-top: 6px; }
+  button.big {
+    display: block; width: 100%;
+    min-height: 52px;
+    margin: 16px 0 4px;
+    font-size: 18px; font-weight: 700;
+    color: #fff; background: #d6336c;
+    border: 0; border-radius: 14px;
+    cursor: pointer;
+  }
+  button.big:active { transform: scale(.98); }
+  [hidden] { display: none !important; }
+  .count {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 8px; margin: 16px 0 8px; text-align: center;
+  }
+  .count div { background: #fff; border-radius: 12px; padding: 10px 4px; }
+  .count b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; }
+  .count span { font-size: 12px; color: #888; }
+  #confetti { position: fixed; inset: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<main>
+  <div id="gate">
+    <span class="badge">11. oktober</span>
+    <div class="count" aria-label="Nedtelling">
+      <div><b id="d">–</b><span>Dager</span></div>
+      <div><b id="h">–</b><span>Timer</span></div>
+      <div><b id="m">–</b><span>Minutter</span></div>
+      <div><b id="s">–</b><span>Sekunder</span></div>
+    </div>
+  </div>
+
+  <div id="birthday" hidden>
+  <span class="badge">11. oktober</span>
+  <h1>Gratulerer med dagen, Natasha!</h1>
+
+  <figure>
+    <picture>
+      <source srcset="image-800.webp" type="image/webp">
+      <img src="image-800.jpg" width="800" height="1105" alt="Bursdagsfeiring med kake og konfetti" fetchpriority="high">
+    </picture>
+  </figure>
+
+  <button class="big" id="celebrate" type="button">Feir! 🎉</button>
+  </div>
+</main>
+
+<script>
+  // Gate: show countdown only until 11 Oct 2026 00:00 Oslo time, then reveal page
+  var target = new Date("2026-10-11T00:00:00+02:00").getTime();
+  var gate = document.getElementById("gate"),
+      birthday = document.getElementById("birthday"),
+      revealed = false;
+  var running = false;
+
+  function reveal() {
+    if (revealed) return;
+    revealed = true;
+    gate.hidden = true;
+    birthday.hidden = false;
+    document.title = "Gratulerer med dagen, Natasha! \u2013 11. oktober";
+    burst(60);
+  }
+  function tick() {
+    var diff = target - Date.now();
+    if (diff <= 0) { reveal(); return; }
+    document.getElementById("d").textContent = Math.floor(diff / 864e5);
+    document.getElementById("h").textContent = Math.floor(diff / 36e5) % 24;
+    document.getElementById("m").textContent = Math.floor(diff / 6e4) % 60;
+    document.getElementById("s").textContent = Math.floor(diff / 1e3) % 60;
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // Tiny confetti, no dependencies
+  var cv = document.getElementById("confetti"),
+      ctx = cv.getContext("2d"),
+      parts = [];
+  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function size() { cv.width = innerWidth; cv.height = innerHeight; }
+  addEventListener("resize", size); size();
+
+  function burst(n) {
+    if (reduced) return;
+    var colors = ["#d6336c", "#f59f00", "#40c057", "#4dabf7", "#9775fa"];
+    for (var i = 0; i < n; i++) {
+      parts.push({
+        x: innerWidth / 2 + (Math.random() - .5) * 120,
+        y: innerHeight * .35,
+        vx: (Math.random() - .5) * 9,
+        vy: Math.random() * -8 - 2,
+        c: colors[i % colors.length],
+        r: Math.random() * 5 + 3,
+        life: 90 + Math.random() * 40
+      });
+    }
+    if (!running) { running = true; requestAnimationFrame(frame); }
+  }
+  function frame() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    parts = parts.filter(function(p) { return p.life > 0; });
+    if (!parts.length) { running = false; return; }
+    parts.forEach(function(p) {
+      p.x += p.vx; p.y += p.vy; p.vy += .25; p.vx *= .99; p.life--;
+      ctx.fillStyle = p.c;
+      ctx.fillRect(p.x, p.y, p.r, p.r * .6);
+    });
+    requestAnimationFrame(frame);
+  }
+  document.getElementById("celebrate").addEventListener("click", function() { burst(120); });
+</script>
+</body>
+</html>
